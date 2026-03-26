@@ -1,0 +1,66 @@
+name: Update Profile README
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch public game-challenge repos and update table
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TABLE_HEADER="| Game | Description | P²C² | CI | Issues | Last Updated |"
+          TABLE_SEP="|------|-------------|------|----|--------|--------------|"
+
+          REPOS=$(gh api --paginate '/orgs/p2c2-acacia/repos?per_page=100' \
+            --jq '.[] | select(.visibility == "public") | select(.topics | any(. == "game-challenge")) | {name, description, html_url, topics}')
+
+          if [ -z "$REPOS" ]; then
+            TABLE_CONTENT="*More challenges coming soon!*"
+          else
+            ROWS=""
+            echo "$REPOS" | jq -s '.' | jq -r '.[] | @base64' | while read -r encoded; do
+              repo=$(echo "$encoded" | base64 -d)
+              name=$(echo "$repo" | jq -r '.name')
+              desc=$(echo "$repo" | jq -r '.description // "No description"')
+              url=$(echo "$repo" | jq -r '.html_url')
+              p2c2_code=$(echo "$repo" | jq -r '[.topics[] | select(startswith("p2c2-"))] | first | sub("p2c2-"; "")')
+
+              row="| [${name}](${url}) | ${desc} | ![P²C²](https://img.shields.io/badge/P²C²-${p2c2_code}-green?style=flat-square) | ![CI](https://img.shields.io/github/actions/workflow/status/p2c2-acacia/${name}/ci.yml?label=CI&style=flat-square) | ![Issues](https://img.shields.io/github/issues/p2c2-acacia/${name}?style=flat-square) | ![Last Commit](https://img.shields.io/github/last-commit/p2c2-acacia/${name}?style=flat-square) |"
+              echo "$row" >> /tmp/table_rows.txt
+            done
+
+            if [ -f /tmp/table_rows.txt ]; then
+              ROWS=$(cat /tmp/table_rows.txt)
+              TABLE_CONTENT="${TABLE_HEADER}
+          ${TABLE_SEP}
+          ${ROWS}"
+            else
+              TABLE_CONTENT="*More challenges coming soon!*"
+            fi
+          fi
+
+          awk -v content="$TABLE_CONTENT" '
+            /<!-- GAME-CHALLENGES-START -->/ { print; print content; skip=1; next }
+            /<!-- GAME-CHALLENGES-END -->/ { skip=0 }
+            !skip { print }
+          ' profile/README.md > /tmp/readme_updated.md
+
+          mv /tmp/readme_updated.md profile/README.md
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet profile/README.md || (git add profile/README.md && git commit -m "chore: update game challenges table" && git push)

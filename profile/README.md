@@ -53,7 +53,7 @@ A game tagged `P²C² 0001` is deterministic, fully observable, single agent, dy
 <!-- GAME-CHALLENGES-START -->
 | Game | Description | P²C² | CI | Issues | Last Updated |
 |------|-------------|------|----|--------|--------------|
-| [Snake](https://github.com/p2c2-acacia/snake) | Classic snake game agent challenge | ![P²C²](https://img.shields.io/badge/P²C²-0001-green?style=flat-square) | ![CI](https://img.shields.io/github/actions/workflow/status/p2c2-acacia/snake/ci.yml?label=CI&style=flat-square) | ![Issues](https://img.shields.io/github/issues/p2c2-acacia/snake?style=flat-square) | ![Last Commit](https://img.shields.io/github/last-commit/p2c2-acacia/snake?style=flat-square) |
+| [snake](https://github.com/p2c2-acacia/snake) | No description | ![P²C²](https://img.shields.io/badge/P²C²-0001-green?style=flat-square) | ![CI](https://img.shields.io/github/actions/workflow/status/p2c2-acacia/snake/ci.yml?label=CI&style=flat-square) | ![Issues](https://img.shields.io/github/issues/p2c2-acacia/snake?style=flat-square) | ![Last Commit](https://img.shields.io/github/last-commit/p2c2-acacia/snake?style=flat-square) |
 <!-- GAME-CHALLENGES-END -->
 
 ---
